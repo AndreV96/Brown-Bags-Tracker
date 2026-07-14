@@ -59,6 +59,32 @@
     font-size: 14px;
     cursor: pointer;
   }
+  .schedule-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge-preview {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .preview-note {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+  .preview-note strong { display: block; margin-bottom: 2px; }
   .session-list {
     display: flex;
     flex-direction: column;
@@ -233,7 +259,10 @@
 
 <main>
   <div class="toolbar">
-    <button class="btn-primary" id="openModalBtn">+ Schedule Presentation</button>
+    <div class="schedule-wrap">
+      <span class="badge-preview">Preview</span>
+      <button class="btn-primary" id="openModalBtn">+ Schedule Presentation</button>
+    </div>
   </div>
 
   <div class="session-list" id="sessionList"></div>
@@ -260,6 +289,10 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h3>Schedule a Presentation</h3>
+    <div class="preview-note">
+      <strong>Preview — not live yet</strong>
+      This is a mockup of an upcoming feature. Nothing you enter here will be saved.
+    </div>
     <label>Title</label>
     <input type="text" id="fTitle" placeholder="e.g. Intro to Vector Databases">
 
@@ -278,8 +311,8 @@
     </label>
 
     <div class="modal-actions">
-      <button class="btn-secondary" id="cancelModalBtn">Cancel</button>
-      <button class="btn-primary" id="saveSessionBtn">Save</button>
+      <button class="btn-secondary" id="cancelModalBtn">Close</button>
+      <button class="btn-primary" id="saveSessionBtn" title="Not available in this preview">Save (coming soon)</button>
     </div>
   </div>
 </div>
@@ -367,22 +400,8 @@
     document.getElementById("modalOverlay").classList.remove("open");
   };
   document.getElementById("saveSessionBtn").onclick = () => {
-    const title = document.getElementById("fTitle").value.trim();
-    const date = document.getElementById("fDate").value;
-    const presenter = document.getElementById("fPresenter").value.trim();
-    const background = document.getElementById("fBackground").value.trim();
-    const returning = document.getElementById("fReturning").checked;
-
-    if (!title || !date || !presenter) {
-      alert("Please fill in at least title, date, and presenter.");
-      return;
-    }
-
-    sessions.push({ title, date, presenter, background, returning });
-    document.getElementById("modalOverlay").classList.remove("open");
-    ["fTitle","fDate","fPresenter","fBackground"].forEach(id => document.getElementById(id).value = "");
-    document.getElementById("fReturning").checked = false;
-    renderSessions();
+    // Preview only — scheduling isn't implemented yet, so nothing is persisted.
+    alert("Scheduling from the app isn't available yet — this is just a preview of the feature.");
   };
 
   renderSessions();
