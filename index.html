@@ -98,6 +98,15 @@
     display: flex;
     justify-content: space-between;
     gap: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .session-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transform: translateY(-1px);
   }
   .session-main {
     display: flex;
@@ -317,37 +326,9 @@
   </div>
 </div>
 
+<script src="data.js"></script>
 <script>
-  let sessions = [
-    {
-      title: "Retrieval-Augmented Generation in Practice",
-      date: "2026-07-22",
-      presenter: "Alex Chen",
-      background: "Senior Engineer, has worked on search infra for 6 years",
-      returning: true
-    },
-    {
-      title: "Designing for Accessibility",
-      date: "2026-07-29",
-      presenter: "Morgan Lee",
-      background: "Product Designer, new to Brown Bags",
-      returning: false
-    },
-    {
-      title: "From IC to Tech Lead",
-      date: "2026-08-05",
-      presenter: "Priya Nair",
-      background: "Staff Engineer, mentors new tech leads",
-      returning: true
-    },
-    {
-      title: "Automating Your Local Dev Setup",
-      date: "2026-08-12",
-      presenter: "Sam Okafor",
-      background: "DevOps Engineer, first time presenting",
-      returning: false
-    }
-  ];
+  const sessions = window.SESSIONS;
 
   function formatDateParts(dateStr) {
     const d = new Date(dateStr + "T00:00:00");
@@ -372,8 +353,9 @@
 
     filtered.forEach(s => {
       const { day, month } = formatDateParts(s.date);
-      const card = document.createElement("div");
+      const card = document.createElement("a");
       card.className = "session-card";
+      card.href = `session.html?id=${encodeURIComponent(s.id)}`;
       card.innerHTML = `
         <div class="session-main">
           <div class="session-title">${s.title}</div>
