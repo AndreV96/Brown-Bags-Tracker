@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brown Bags Tracker</title>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2926;
+    --text-muted: #7a746b;
+    --accent: #b5651d;
+    --accent-soft: #f1e4d6;
+    --badge-new: #3f7d58;
+    --badge-new-bg: #e4f1e9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 32px 24px 20px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 28px;
+  }
+  header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 15px;
+  }
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    margin: 24px 0 16px;
+    flex-wrap: wrap;
+  }
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .session-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .session-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .session-title {
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .session-meta {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .presenter-block {
+    font-size: 13px;
+    color: var(--text);
+    margin-top: 4px;
+  }
+  .presenter-block .bg {
+    color: var(--text-muted);
+  }
+  .tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .category-tag {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge-new {
+    background: var(--badge-new-bg);
+    color: var(--badge-new);
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .date-block {
+    text-align: right;
+    min-width: 90px;
+  }
+  .date-day {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .date-month {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px 0;
+    font-size: 14px;
+  }
+  .future-section {
+    margin-top: 48px;
+  }
+  .future-section h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  .future-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .future-item {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .future-item strong {
+    display: block;
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h3 { margin-top: 0; }
+  .modal label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 12px 0 4px;
+  }
+  .modal input, .modal select, .modal textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .modal textarea { resize: vertical; min-height: 60px; }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .btn-secondary {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1a17;
+      --surface: #26231f;
+      --border: #3a352e;
+      --text: #ece7de;
+      --text-muted: #a39a8c;
+      --accent: #d98a4a;
+      --accent-soft: #3a2c1e;
+      --badge-new: #7fd9a0;
+      --badge-new-bg: #1f3327;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Brown Bags Tracker</h1>
+  <p>Keep track of upcoming Brown Bag sessions — who's presenting, on what, and when.</p>
+</header>
+
+<main>
+  <div class="toolbar">
+    <div class="filters" id="filters"></div>
+    <button class="btn-primary" id="openModalBtn">+ Schedule Presentation</button>
+  </div>
+
+  <div class="session-list" id="sessionList"></div>
+
+  <div class="future-section">
+    <h2>Coming Soon</h2>
+    <div class="future-list">
+      <div class="future-item">
+        <strong>Schedule from the app</strong>
+        Presenters will be able to propose and book a slot directly, instead of going through a manual request.
+      </div>
+      <div class="future-item">
+        <strong>Past presentations</strong>
+        Browse a history of previous sessions with full details on each one.
+      </div>
+      <div class="future-item">
+        <strong>Linked resources</strong>
+        Decks, repos, and recordings for each past session, linked out to their existing Confluence page.
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Schedule a Presentation</h3>
+    <label>Title</label>
+    <input type="text" id="fTitle" placeholder="e.g. Intro to Vector Databases">
+
+    <label>Date</label>
+    <input type="date" id="fDate">
+
+    <label>Presenter</label>
+    <input type="text" id="fPresenter" placeholder="e.g. Jamie Rivera">
+
+    <label>Presenter background</label>
+    <textarea id="fBackground" placeholder="Short bio or role"></textarea>
+
+    <label>Topic category</label>
+    <select id="fCategory">
+      <option>Engineering</option>
+      <option>Product</option>
+      <option>Design</option>
+      <option>Career Growth</option>
+      <option>Tools & Productivity</option>
+      <option>Other</option>
+    </select>
+
+    <label style="display:flex; align-items:center; gap:8px; margin-top:14px;">
+      <input type="checkbox" id="fReturning" style="width:auto;">
+      Presenter has done a previous Brown Bag
+    </label>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelModalBtn">Cancel</button>
+      <button class="btn-primary" id="saveSessionBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const categories = ["All", "Engineering", "Product", "Design", "Career Growth", "Tools & Productivity", "Other"];
+  let activeFilter = "All";
+
+  let sessions = [
+    {
+      title: "Retrieval-Augmented Generation in Practice",
+      date: "2026-07-22",
+      presenter: "Alex Chen",
+      background: "Senior Engineer, has worked on search infra for 6 years",
+      category: "Engineering",
+      returning: true
+    },
+    {
+      title: "Designing for Accessibility",
+      date: "2026-07-29",
+      presenter: "Morgan Lee",
+      background: "Product Designer, new to Brown Bags",
+      category: "Design",
+      returning: false
+    },
+    {
+      title: "From IC to Tech Lead",
+      date: "2026-08-05",
+      presenter: "Priya Nair",
+      background: "Staff Engineer, mentors new tech leads",
+      category: "Career Growth",
+      returning: true
+    },
+    {
+      title: "Automating Your Local Dev Setup",
+      date: "2026-08-12",
+      presenter: "Sam Okafor",
+      background: "DevOps Engineer, first time presenting",
+      category: "Tools & Productivity",
+      returning: false
+    }
+  ];
+
+  function formatDateParts(dateStr) {
+    const d = new Date(dateStr + "T00:00:00");
+    return {
+      day: d.getDate(),
+      month: d.toLocaleString("en-US", { month: "short" }).toUpperCase()
+    };
+  }
+
+  function renderFilters() {
+    const el = document.getElementById("filters");
+    el.innerHTML = "";
+    categories.forEach(cat => {
+      const btn = document.createElement("button");
+      btn.className = "filter-btn" + (cat === activeFilter ? " active" : "");
+      btn.textContent = cat;
+      btn.onclick = () => { activeFilter = cat; renderFilters(); renderSessions(); };
+      el.appendChild(btn);
+    });
+  }
+
+  function renderSessions() {
+    const list = document.getElementById("sessionList");
+    list.innerHTML = "";
+
+    const filtered = sessions
+      .filter(s => activeFilter === "All" || s.category === activeFilter)
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="empty-state">No sessions scheduled in this category yet.</div>';
+      return;
+    }
+
+    filtered.forEach(s => {
+      const { day, month } = formatDateParts(s.date);
+      const card = document.createElement("div");
+      card.className = "session-card";
+      card.innerHTML = `
+        <div class="session-main">
+          <div class="session-title">${s.title}</div>
+          <div class="presenter-block">
+            <strong>${s.presenter}</strong> — <span class="bg">${s.background}</span>
+          </div>
+          <div class="tags">
+            <span class="category-tag">${s.category}</span>
+            ${s.returning ? '<span class="badge-new">Returning presenter</span>' : '<span class="badge-new" style="background:var(--accent-soft); color:var(--accent);">First time presenting</span>'}
+          </div>
+        </div>
+        <div class="date-block">
+          <div class="date-day">${day}</div>
+          <div class="date-month">${month}</div>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById("openModalBtn").onclick = () => {
+    document.getElementById("modalOverlay").classList.add("open");
+  };
+  document.getElementById("cancelModalBtn").onclick = () => {
+    document.getElementById("modalOverlay").classList.remove("open");
+  };
+  document.getElementById("saveSessionBtn").onclick = () => {
+    const title = document.getElementById("fTitle").value.trim();
+    const date = document.getElementById("fDate").value;
+    const presenter = document.getElementById("fPresenter").value.trim();
+    const background = document.getElementById("fBackground").value.trim();
+    const category = document.getElementById("fCategory").value;
+    const returning = document.getElementById("fReturning").checked;
+
+    if (!title || !date || !presenter) {
+      alert("Please fill in at least title, date, and presenter.");
+      return;
+    }
+
+    sessions.push({ title, date, presenter, background, category, returning });
+    document.getElementById("modalOverlay").classList.remove("open");
+    ["fTitle","fDate","fPresenter","fBackground"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("fReturning").checked = false;
+    renderSessions();
+  };
+
+  renderFilters();
+  renderSessions();
+</script>
+
+</body>
+</html>
