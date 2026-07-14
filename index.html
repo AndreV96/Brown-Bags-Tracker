@@ -46,28 +46,9 @@
     display: flex;
     gap: 12px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     margin: 24px 0 16px;
     flex-wrap: wrap;
-  }
-  .filters {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .filter-btn {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-muted);
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .filter-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
   }
   .btn-primary {
     background: var(--accent);
@@ -121,14 +102,6 @@
     gap: 8px;
     flex-wrap: wrap;
     align-items: flex-start;
-  }
-  .category-tag {
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-size: 12px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    white-space: nowrap;
   }
   .badge-new {
     background: var(--badge-new-bg);
@@ -260,7 +233,6 @@
 
 <main>
   <div class="toolbar">
-    <div class="filters" id="filters"></div>
     <button class="btn-primary" id="openModalBtn">+ Schedule Presentation</button>
   </div>
 
@@ -300,16 +272,6 @@
     <label>Presenter background</label>
     <textarea id="fBackground" placeholder="Short bio or role"></textarea>
 
-    <label>Topic category</label>
-    <select id="fCategory">
-      <option>Engineering</option>
-      <option>Product</option>
-      <option>Design</option>
-      <option>Career Growth</option>
-      <option>Tools & Productivity</option>
-      <option>Other</option>
-    </select>
-
     <label style="display:flex; align-items:center; gap:8px; margin-top:14px;">
       <input type="checkbox" id="fReturning" style="width:auto;">
       Presenter has done a previous Brown Bag
@@ -323,16 +285,12 @@
 </div>
 
 <script>
-  const categories = ["All", "Engineering", "Product", "Design", "Career Growth", "Tools & Productivity", "Other"];
-  let activeFilter = "All";
-
   let sessions = [
     {
       title: "Retrieval-Augmented Generation in Practice",
       date: "2026-07-22",
       presenter: "Alex Chen",
       background: "Senior Engineer, has worked on search infra for 6 years",
-      category: "Engineering",
       returning: true
     },
     {
@@ -340,7 +298,6 @@
       date: "2026-07-29",
       presenter: "Morgan Lee",
       background: "Product Designer, new to Brown Bags",
-      category: "Design",
       returning: false
     },
     {
@@ -348,7 +305,6 @@
       date: "2026-08-05",
       presenter: "Priya Nair",
       background: "Staff Engineer, mentors new tech leads",
-      category: "Career Growth",
       returning: true
     },
     {
@@ -356,7 +312,6 @@
       date: "2026-08-12",
       presenter: "Sam Okafor",
       background: "DevOps Engineer, first time presenting",
-      category: "Tools & Productivity",
       returning: false
     }
   ];
@@ -369,28 +324,16 @@
     };
   }
 
-  function renderFilters() {
-    const el = document.getElementById("filters");
-    el.innerHTML = "";
-    categories.forEach(cat => {
-      const btn = document.createElement("button");
-      btn.className = "filter-btn" + (cat === activeFilter ? " active" : "");
-      btn.textContent = cat;
-      btn.onclick = () => { activeFilter = cat; renderFilters(); renderSessions(); };
-      el.appendChild(btn);
-    });
-  }
-
   function renderSessions() {
     const list = document.getElementById("sessionList");
     list.innerHTML = "";
 
     const filtered = sessions
-      .filter(s => activeFilter === "All" || s.category === activeFilter)
+      .slice()
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
     if (filtered.length === 0) {
-      list.innerHTML = '<div class="empty-state">No sessions scheduled in this category yet.</div>';
+      list.innerHTML = '<div class="empty-state">No sessions scheduled yet.</div>';
       return;
     }
 
@@ -405,7 +348,6 @@
             <strong>${s.presenter}</strong> — <span class="bg">${s.background}</span>
           </div>
           <div class="tags">
-            <span class="category-tag">${s.category}</span>
             ${s.returning ? '<span class="badge-new">Returning presenter</span>' : '<span class="badge-new" style="background:var(--accent-soft); color:var(--accent);">First time presenting</span>'}
           </div>
         </div>
@@ -429,7 +371,6 @@
     const date = document.getElementById("fDate").value;
     const presenter = document.getElementById("fPresenter").value.trim();
     const background = document.getElementById("fBackground").value.trim();
-    const category = document.getElementById("fCategory").value;
     const returning = document.getElementById("fReturning").checked;
 
     if (!title || !date || !presenter) {
@@ -437,14 +378,13 @@
       return;
     }
 
-    sessions.push({ title, date, presenter, background, category, returning });
+    sessions.push({ title, date, presenter, background, returning });
     document.getElementById("modalOverlay").classList.remove("open");
     ["fTitle","fDate","fPresenter","fBackground"].forEach(id => document.getElementById(id).value = "");
     document.getElementById("fReturning").checked = false;
     renderSessions();
   };
 
-  renderFilters();
   renderSessions();
 </script>
 
